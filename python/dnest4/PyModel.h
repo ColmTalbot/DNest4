@@ -29,8 +29,8 @@ public:
         }
 
         // Parse that return value as a numpy array.
-        PyObject* rarray = PyArray_FROM_OTF(result, NPY_DOUBLE, NPY_IN_ARRAY);
-        if (result == NULL || (int)PyArray_NDIM(rarray) != 1) {
+        PyObject* rarray = PyArray_FROM_OTF(result, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
+        if (result == NULL || (int)PyArray_NDIM((PyArrayObject*)rarray) != 1) {
             Py_DECREF(result);
             Py_XDECREF(rarray);
             set_exception(-2);
@@ -38,9 +38,9 @@ public:
         }
 
         // Save the output as a C++ vector.
-        size_ = (int)PyArray_DIM(rarray, 0);
+        size_ = (int)PyArray_DIM((PyArrayObject*)rarray, 0);
         coords_.resize(size_);
-        double* data = (double*)PyArray_DATA(rarray);
+        double* data = (double*)PyArray_DATA((PyArrayObject*)rarray);
         for (int i = 0; i < size_; ++i) coords_[i] = data[i];
 
         // Clean up.
@@ -68,7 +68,7 @@ public:
             return 0.0;
         }
 
-        double* data = (double*)PyArray_DATA(c);
+        double* data = (double*)PyArray_DATA((PyArrayObject*)c);
         for (int i = 0; i < size_; ++i) coords_[i] = data[i];
         Py_DECREF(c);
 
@@ -105,7 +105,7 @@ public:
         npy_intp shape[] = {size_};
         PyObject* c = PyArray_SimpleNew(1, shape, NPY_DOUBLE);
         if (c == NULL) set_exception(-100);
-        double* data = (double*)PyArray_DATA(c);
+        double* data = (double*)PyArray_DATA((PyArrayObject*)c);
         for (int i = 0; i < size_; ++i) data[i] = coords_[i];
         return c;
     };
